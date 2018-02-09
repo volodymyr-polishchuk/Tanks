@@ -1,7 +1,9 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -12,6 +14,11 @@ public class MainFrame extends JFrame {
 
     public MainFrame(String title) throws HeadlessException {
         super(title);
+        try {
+            setIconImage(ImageIO.read(getClass().getResourceAsStream("/resource/iconlogo.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         setSize(new Dimension(GameDev.width, GameDev.height));
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new GridLayout(1, 1));
@@ -36,10 +43,13 @@ public class MainFrame extends JFrame {
                     case KeyEvent.VK_RIGHT: GameDev.tank.turnBodyRight(); break;
                     case KeyEvent.VK_Z: GameDev.tank.turnHeaderLeft(); break;
                     case KeyEvent.VK_C: GameDev.tank.turnHeaderRight(); break;
-                    case KeyEvent.VK_SPACE:
-                        GameDev.bullets.add(GameDev.tank.doShot());
-                        PlaySound.playSound("/resource/audio/two.wav");
+                    case KeyEvent.VK_SPACE: {
+                        Bullet bullet = GameDev.tank.doShot();
+                        if (bullet == null) break;
+                        GameDev.bullets.add(bullet);
+                        PlaySound.playSound(FileLoader.SHOT_AUDIO);
                         break;
+                    }
                     case KeyEvent.VK_ESCAPE: exit = true; break;
                 }
             }
@@ -73,8 +83,12 @@ public class MainFrame extends JFrame {
 
                 mainPanel.repaint();
 
-                for (Integer integer: integers) {
-                    bullets.remove(integer.intValue()).dieSound();
+                try {
+                    for (Integer integer: integers) {
+                        bullets.remove(integer.intValue()).dieSound();
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
                 }
                 integers.clear();
                 try {

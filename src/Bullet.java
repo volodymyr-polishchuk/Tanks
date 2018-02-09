@@ -33,19 +33,19 @@ public class Bullet {
     }
 
     public void dieSound() {
-        PlaySound.playSound("/resource/audio/one.wav");
+        PlaySound.playSound(FileLoader.BOOM_AUDIO);
     }
 
     public void draw(Graphics g) {
         AffineTransform transform = new AffineTransform();
-        transform.rotate(Math.toRadians(angle), ImageLoader.BULLET.getWidth() / 2, ImageLoader.BULLET.getHeight() / 2);
-        BufferedImage image = new BufferedImage(ImageLoader.BULLET.getWidth(), ImageLoader.BULLET.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        transform.rotate(Math.toRadians(angle), FileLoader.BULLET.getWidth() / 2, FileLoader.BULLET.getHeight() / 2);
+        BufferedImage image = new BufferedImage(FileLoader.BULLET.getWidth(), FileLoader.BULLET.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-        graphics2D.drawImage(ImageLoader.BULLET, transform, null);
+        graphics2D.drawImage(FileLoader.BULLET, transform, null);
         g.drawImage(image, (int)x, (int)y, null);
         dieCount++;
         if (isDie()) {
-            g.drawImage(ImageLoader.BOOM, ((int) (x - ImageLoader.BOOM.getWidth() / 2)), ((int) (y - ImageLoader.BOOM.getHeight() / 2)), null);
+            g.drawImage(FileLoader.BOOM, ((int) (x - FileLoader.BOOM.getWidth() / 2)), ((int) (y - FileLoader.BOOM.getHeight() / 2)), null);
         }
     }
 }
