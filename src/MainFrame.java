@@ -75,7 +75,7 @@ public class MainFrame extends JFrame {
 
                 for (Integer integer: integers) {
                     bullets.remove(integer.intValue()).dieSound();
-                }
+                };;
                 integers.clear();
                 try {
                     Thread.sleep(30);
