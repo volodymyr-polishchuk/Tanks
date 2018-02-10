@@ -1,3 +1,5 @@
+package client;
+
 import javax.imageio.ImageIO;
 import javax.sound.sampled.*;
 import java.awt.image.BufferedImage;

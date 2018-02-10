@@ -1,3 +1,5 @@
+package client;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -13,7 +15,10 @@ public class MainPanel extends JPanel {
                 g.drawImage(FileLoader.FON, i * FileLoader.FON.getHeight(), j * FileLoader.FON.getHeight(), null);
             }
         }
-        GameDev.tank.draw(g);
+//        GameDev.tank.draw(g);
+        for (Tank tank : GameDev.otherTanks) {
+            tank.draw(g);
+        }
         for (Bullet bullet : GameDev.bullets) {
             bullet.draw(g);
         }

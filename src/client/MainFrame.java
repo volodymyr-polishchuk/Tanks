@@ -1,3 +1,5 @@
+package client;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -72,7 +74,18 @@ public class MainFrame extends JFrame {
         Thread thread = new Thread(() -> {
             ArrayList<Integer> integers = new ArrayList<>();
             while (!exit) {
+                long l = System.currentTimeMillis();
                 GameDev.tank.update();
+                try {
+                    Tank[] tanks = GameDev.devClient.sendToServer(GameDev.tank);
+                    GameDev.otherTanks.clear();
+                    for (Tank tank: tanks) {
+                        GameDev.otherTanks.add(tank);
+                    }
+
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
                 ArrayList<Bullet> bullets = GameDev.bullets;
                 for (int i = 0; i < bullets.size(); i++) {
                     bullets.get(i).update();
@@ -91,8 +104,10 @@ public class MainFrame extends JFrame {
                     e.printStackTrace();
                 }
                 integers.clear();
+                long l2 = System.currentTimeMillis() - l;
                 try {
-                    Thread.sleep(30);
+                    if (30 - l2 > 0)
+                        Thread.sleep(30 - l2);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
