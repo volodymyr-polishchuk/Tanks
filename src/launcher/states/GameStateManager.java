@@ -2,11 +2,12 @@ package launcher.states;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 /**
  * Created by Vladimir on 10/02/18.
  **/
-public class GameStateManager {
+public class GameStateManager implements GameState{
     private GameState nowState;
 
     public GameStateManager(GameState nowState) {
@@ -17,7 +18,8 @@ public class GameStateManager {
         nowState.update();
     }
 
-    public void redraw(Graphics g) {
+    @Override
+    public void draw(Graphics g) {
         nowState.draw(g);
     }
 
@@ -31,6 +33,11 @@ public class GameStateManager {
 
     public void keyReleased(KeyEvent e) {
         nowState.keyReleased(e);
+    }
+
+    @Override
+    public void mouseClick(MouseEvent e) {
+
     }
 
     public GameState getGameState() {

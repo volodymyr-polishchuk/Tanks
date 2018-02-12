@@ -85,9 +85,13 @@ public class SettingState implements GameState {
             case KeyEvent.VK_ENTER:
                 switch (nowItem) {
                     case THEME: theme = theme < 3 ? theme + 1: 0;break;
-                    case PLAYER_NAME: inputName = !inputName; name = "";break;
+                    case PLAYER_NAME:
+                        inputName = !inputName;
+                        Launcher.NICKNAME = name.length() <= 0 ? Launcher.NICKNAME : name;
+                        break;
                     case RETURN: Launcher.GAME_WINDOW.setGameState(new MenuState()); break;
-                }
+                } break;
+            case KeyEvent.VK_ESCAPE: Launcher.GAME_WINDOW.setGameState(new MenuState()); break;
         }
     }
 

@@ -12,13 +12,16 @@ import java.util.concurrent.Executors;
 
 public class MultiThreadServer {
 
+    public static int port = 0;
+
     static ExecutorService executeIt = Executors.newFixedThreadPool(8);
 
     public static void main(String[] args) {
-        try (ServerSocket server = new ServerSocket(3345);
+        try (ServerSocket server = new ServerSocket(0);
              BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
             System.out.println("Server socket created, command console reader for listen to server commands");
-
+            System.out.println("Server open at -> " + server.getLocalSocketAddress());
+            port = server.getLocalPort();
             while (!server.isClosed()) {
                 if (br.ready()) {
                     System.out.println("Main Server found any messages in channel, let's look at them.");
@@ -38,5 +41,9 @@ public class MultiThreadServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static int getPort() {
+        return port;
     }
 }

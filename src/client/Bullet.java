@@ -1,6 +1,5 @@
 package client;
 
-import launcher.Launcher;
 import launcher.ResourceLoader;
 
 import java.awt.*;
@@ -15,8 +14,8 @@ public class Bullet {
     private double y;
     private double angle = 0.0;
     private int dieCount = 0;
-    private static final double MOVE_SPEED = 1;
-    private static final int DIE_TIME = 1000;
+    private static final double MOVE_SPEED = 5;
+    private static final int DIE_TIME = 200;
     private BufferedImage bullet_image = ResourceLoader.BULLET;
     private BufferedImage boom_image = ResourceLoader.BOOM;
 

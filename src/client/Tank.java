@@ -1,5 +1,6 @@
 package client;
 
+import launcher.Launcher;
 import launcher.ResourceLoader;
 
 import java.awt.*;
@@ -16,25 +17,40 @@ public class Tank {
     private double rotateBody = 0.0;
     private double rotateHeader = 0.0;
     private double health = 1;
-
     private int cool_down_count = (int) COOL_DOWN;
+
     private int move = 0;
+    private double nx, ny;
     private double dBody = 0;
     private double dHeader = 0;
     private boolean moveForce = false;
     private int drawCoolDown = 1;
     private BufferedImage textureBody;
     private BufferedImage textureHeader;
+    private final BufferedImage textureBodyCrash;
+    private final BufferedImage textureHeaderCrash;
 
-    private static final double COOL_DOWN = 50;
-    private static final double BODY_ROTATE = 1.0;
-    private static final double HEADER_ROTATE = 3.2;
-    private static final double MOVE_SPEED = 2.0;
-//    private static final double MOVE_FORCE_SPEED = 3.0;
+    private static final double COOL_DOWN = 50; // Кадрів
+    private static final double BODY_ROTATE = 1.0; // Градусів за кадр
+    private static final double HEADER_ROTATE = 3.2; // Градусів за кадр
+    private static final double MOVE_SPEED = 2.0; // Довжина пройденого шляху за кадр
+    private static final double MOVE_FORCE_SPEED = 3.0; // Довжина пройденого шляху за кадр
 
     private Tank() {
         textureBody = ResourceLoader.TANK_BODY;
         textureHeader = ResourceLoader.TANK_HEADER;
+        textureBodyCrash = ResourceLoader.TANK_BODY_CRASH;
+        textureHeaderCrash = ResourceLoader.TANK_HEADER_CRASH;
+    }
+
+    public Tank(String name, double xPosition, double yPosition, double rotateBody, BufferedImage textureBody, BufferedImage textureHeader) {
+        this();
+        this.name = name;
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+        this.rotateBody = rotateBody;
+        this.textureBody = textureBody;
+        this.textureHeader = textureHeader;
     }
 
     public Tank(int xPosition, int yPosition, double angle) {
@@ -61,6 +77,7 @@ public class Tank {
         line += String.valueOf(yPosition) + ";";
         line += String.valueOf(rotateBody) + ";";
         line += String.valueOf(rotateHeader) + ";";
+        line += String.valueOf(cool_down_count) + ";";
         line += String.valueOf(health);
         return line;
     }
@@ -70,14 +87,15 @@ public class Tank {
         String[] lines = data.split("/");
         String name = lines[0];
         lines = lines[1].split(";");
-        if (lines.length != 5) throw new IllegalArgumentException("input data is wrong -> " + data);
+        if (lines.length != 6) throw new IllegalArgumentException("input data is wrong -> " + data);
         Tank tank = new Tank();
         tank.name = name;
         tank.xPosition = Double.valueOf(lines[0]);
         tank.yPosition = Double.valueOf(lines[1]);
         tank.rotateBody = Double.valueOf(lines[2]);
         tank.rotateHeader = Double.valueOf(lines[3]);
-        tank.health = Double.valueOf(lines[4]);
+        tank.cool_down_count = Integer.valueOf(lines[4]);
+        tank.health = Double.valueOf(lines[5]);
         return tank;
     }
 
@@ -107,6 +125,11 @@ public class Tank {
 
     public void turnHeaderStop() {dHeader = 0;}
 
+
+    public Polygon getPolygon() {
+        return getPolygon(textureBody.getWidth(), textureBody.getHeight(), 46, 30);
+    }
+
     /**
      * @param rw - реальна ширина текстури навколо картинки
      * @param rh - реальна висота текстури навколо картинки
@@ -114,7 +137,7 @@ public class Tank {
      * @param hh - висота хітбокса
      * @return Polygon - який позначає хітбокс
      */
-    private Polygon getPolygon(int rw, int rh, int hw, int hh) {
+    public Polygon getPolygon(int rw, int rh, int hw, int hh) {
         double cx = xPosition + rw / 2;
         double cy = yPosition + rh / 2;
         double tx = cx + (hw / 2) * Math.cos(Math.toRadians(rotateBody));
@@ -145,29 +168,49 @@ public class Tank {
     }
 
     public void update() {
-//        if (moveForce) {
-//            xPosition = xPosition + MOVE_FORCE_SPEED * move * Math.cos(Math.toRadians(rotateBody));
-//            yPosition = yPosition + MOVE_FORCE_SPEED * move * Math.sin(Math.toRadians(rotateBody));
-//        } else {
-            xPosition = xPosition + MOVE_SPEED * move * Math.cos(Math.toRadians(rotateBody));
-            yPosition = yPosition + MOVE_SPEED * move * Math.sin(Math.toRadians(rotateBody));
-//        }
-        rotateBody = rotateBody + dBody * BODY_ROTATE;
+        if (health <= 0) {
+            textureBody = textureBodyCrash;
+            textureHeader = textureHeaderCrash;
+            return;
+        }
+        if (moveForce) {
+            nx = xPosition + MOVE_FORCE_SPEED * move * Math.cos(Math.toRadians(rotateBody));
+            ny = yPosition + MOVE_FORCE_SPEED * move * Math.sin(Math.toRadians(rotateBody));
+            if (tryMove(xPosition, yPosition, nx, ny)) {
+                xPosition = nx;
+                yPosition = ny;
+            }
+            health -= health > 0.1 ? 0.001 : 0;
+        } else {
+            nx = xPosition + move * Math.cos(Math.toRadians(rotateBody));
+            ny = yPosition + move * Math.sin(Math.toRadians(rotateBody));
+            if (tryMove(xPosition, yPosition, nx, ny)) {
+                xPosition = nx;
+                yPosition = ny;
+            }
+        }
+        if (move == -1) rotateBody = rotateBody - dBody * BODY_ROTATE;
+        else rotateBody = rotateBody + dBody * BODY_ROTATE;
         if (dHeader != 0)
-            rotateHeader = rotateHeader + (dBody * BODY_ROTATE + dHeader * HEADER_ROTATE) * dHeader;
+            rotateHeader = rotateHeader + dBody * BODY_ROTATE + dHeader * HEADER_ROTATE;
         cool_down_count += cool_down_count >= COOL_DOWN ? 0 : 1;
     }
 
+    public boolean tryMove(double x, double y, double nx, double ny) {
+        return true;
+    }
+
     public void draw(Graphics g) {
+        g.drawString(name, (int)xPosition, (int)(yPosition - 12));
         g.drawRect((int)xPosition, (int)(yPosition - 10), textureBody.getWidth(), 5);
-        g.setColor(Color.GREEN);
+        g.setColor(new Color(0x0AE900));
         g.fillRect((int)xPosition + 1, (int) (yPosition - 10 + 1), (int) ((textureBody.getWidth() - 1) * health), 4);
-        g.setColor(Color.RED);
-        g.drawLine(
+        g.setColor(new Color(0xF5222D));
+        g.fillRect(
                 (int) (xPosition),
                 (int) (yPosition - 4),
-                (int) (xPosition + textureBody.getWidth() * ((double) cool_down_count / COOL_DOWN) * drawCoolDown),
-                (int) (yPosition - 4)
+                (int) (textureBody.getWidth() * ((double) cool_down_count / COOL_DOWN) * drawCoolDown),
+                (int) (2)
         );
         g.setColor(Color.BLACK);
         AffineTransform transform = new AffineTransform();
@@ -193,7 +236,5 @@ public class Tank {
 
         g.drawImage(imageHeader, (int)xPosition, (int)yPosition, null);
     }
-
-
 
 }

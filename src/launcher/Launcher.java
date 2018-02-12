@@ -1,6 +1,7 @@
 package launcher;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Created by Vladimir on 10/02/18.
@@ -8,6 +9,7 @@ import java.io.IOException;
 public class Launcher {
     public static MainFrame GAME_WINDOW;
     public static ResourceLoader RESOURCE_LOADER;
+    public static String NICKNAME = "Player_" + new Random().nextInt(10000);
 
     public static void main(String[] args) throws IOException {
         RESOURCE_LOADER = new ResourceLoader();

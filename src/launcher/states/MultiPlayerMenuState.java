@@ -2,22 +2,27 @@ package launcher.states;
 
 import launcher.Launcher;
 import launcher.ResourceLoader;
+import server.MultiThreadServer;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * Created by Vladimir on 10/02/18.
  **/
 public class MultiPlayerMenuState implements GameState {
-    private static String[] items = new String[] {"Адреса сервера", "Порт", "З'єднатися", "На головну"};
-    private static final int ADDRESS = 0, PORT = 1, CONNECT = 2, RETURN = 3;
+    private static String[] items = new String[] {"Адреса сервера", "Порт", "З'єднатися", "Запустити сервер", "На головну"};
+    private static final int ADDRESS = 0, PORT = 1, CONNECT = 2, HOST = 3, RETURN = 4;
     private int nowItem = ADDRESS;
     private String address = "";
     private boolean inputAddress = false;
     private String port = "";
     private boolean inputPort = false;
+    private MultiThreadServer server;
+    private Thread hostThread;
 
     @Override
     public void update() {
@@ -85,13 +90,26 @@ public class MultiPlayerMenuState implements GameState {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_UP: nowItem = nowItem > 0 ? nowItem - 1: items.length - 1; inputPort = false; inputAddress = false; break;
             case KeyEvent.VK_DOWN: nowItem = nowItem < items.length - 1 ? nowItem + 1 : 0; inputPort = false; inputAddress = false; break;
+            case KeyEvent.VK_SLASH: Launcher.GAME_WINDOW.log.addMessage(String.valueOf(MultiThreadServer.getPort())); break;
             case KeyEvent.VK_ENTER:
                 switch (nowItem) {
                     case ADDRESS: inputAddress = !inputAddress; break;
                     case PORT: inputPort = !inputPort; break;
-                    case CONNECT: break;
+                    case CONNECT:
+                        try {
+                            Launcher.GAME_WINDOW.setGameState(
+                                    new MultiPlayerState(
+                                            InetAddress.getByName(address), port));
+                        } catch (UnknownHostException e1) {
+                            e1.printStackTrace();
+                        } break;
                     case RETURN: Launcher.GAME_WINDOW.setGameState(new MenuState()); break;
-                }
+                    case HOST: {
+                        new Thread(() -> MultiThreadServer.main(new String[0])).start();
+                    }
+                    break;
+                } break;
+            case KeyEvent.VK_ESCAPE: Launcher.GAME_WINDOW.setGameState(new MenuState()); break;
         }
     }
 

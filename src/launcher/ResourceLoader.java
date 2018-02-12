@@ -18,6 +18,11 @@ public class ResourceLoader {
     public static BufferedImage FON;
     public static BufferedImage BULLET;
     public static BufferedImage BOOM;
+    public static BufferedImage WALL;
+    public static BufferedImage TANK_BODY_CRASH;
+    public static BufferedImage TANK_HEADER_CRASH;
+    public static BufferedImage TANK_BODY_ENEMY;
+    public static BufferedImage TANK_HEADER_ENEMY;
     public static Clip BOOM_AUDIO;
     public static Clip SHOT_AUDIO;
 
@@ -29,6 +34,10 @@ public class ResourceLoader {
         FON = ImageIO.read(getClass().getResourceAsStream("/resource/fon.png"));
         BULLET = ImageIO.read(getClass().getResourceAsStream("/resource/bullet.png"));
         BOOM = ImageIO.read(getClass().getResourceAsStream("/resource/boom.png"));
+        WALL = ImageIO.read(getClass().getResourceAsStream("/resource/wall.png"));
+        TANK_BODY_CRASH = ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_crash_one.png"));
+        TANK_HEADER_CRASH = ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_dark_green.png"));
+        TANK_BODY_ENEMY = ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader_dark_green.png"));
         try {
             BOOM_AUDIO = AudioSystem.getClip();
             AudioInputStream inputStream = AudioSystem.getAudioInputStream(

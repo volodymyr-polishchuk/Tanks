@@ -9,12 +9,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 public class MainFrame extends JFrame implements Runnable {
     private JPanel mainPanel;
     private Thread mainThread;
     private GameStateManager manager;
+    public GameLog log = new GameLog();
     private static final int HEIGHT = 600;
     private static final int WIDTH = 800;
 
@@ -37,13 +40,21 @@ public class MainFrame extends JFrame implements Runnable {
             public void keyReleased(KeyEvent e) {manager.keyReleased(e);}
         });
 
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                manager.mouseClick(e);
+            }
+        });
+
         manager = new GameStateManager(new MenuState());
 
         mainPanel = new JPanel() {
             @Override
             public void paint(Graphics g) {
                 super.paint(g);
-                manager.redraw(g);
+                manager.draw(g);
+                log.draw(g);
             }
         };
         add(mainPanel);
@@ -66,6 +77,7 @@ public class MainFrame extends JFrame implements Runnable {
                 start = System.nanoTime();
 
                 manager.update();
+                log.update();
                 mainPanel.repaint();
 
                 end = System.nanoTime();

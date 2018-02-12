@@ -17,7 +17,6 @@ public class MenuState implements GameState {
 
     @Override
     public void update() {
-
     }
 
     @Override
@@ -30,6 +29,8 @@ public class MenuState implements GameState {
         g.setColor(new Color(76, 175, 80));
         g.fillRect(0, 0, w, h);
         g.setColor(Color.BLACK);
+        g.setFont(new Font("Courier New", Font.PLAIN, 16));
+        g.drawString("Hello, " + Launcher.NICKNAME, 20, 20);
         g.setFont(new Font("Courier New", Font.BOLD, 24));
         for (int i = 0; i < menuItems.length; i++) {
             String item = menuItems[i];

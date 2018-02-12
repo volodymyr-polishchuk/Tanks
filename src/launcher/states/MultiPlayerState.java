@@ -6,28 +6,42 @@ import client.PlaySound;
 import client.Tank;
 import launcher.Launcher;
 import launcher.ResourceLoader;
+import server.MultiThreadServer;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
- * Created by Vladimir on 10/02/18.
+ * Created by Vladimir on 12/02/18.
  **/
-public class SinglePlayerState implements GameState {
+public class MultiPlayerState implements GameState {
     private Tank tank = new Tank(Launcher.NICKNAME, 100, 100, 0);
     private LinkedList<Bullet> bullets = new LinkedList<>();
     private LinkedList<Bullet> tBullets = new LinkedList<>();
-    private LinkedList<Tank> tanks = new LinkedList<>();
+    private LinkedList<Tank> onlineTanks = new LinkedList<>();
     private GameDevClient devClient;
 
-    public SinglePlayerState() {
+    public MultiPlayerState(InetAddress address, String port) {
+        try {
+            devClient = new GameDevClient(address, Integer.valueOf(port));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void update() {
         tank.update();
+        try {
+            onlineTanks = new LinkedList<>(Arrays.asList(devClient.sendToServer(tank)));
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
         tBullets.clear();
 
         bullets.forEach((bullet) -> {
@@ -36,7 +50,7 @@ public class SinglePlayerState implements GameState {
                 tank.doHit();
                 bullet.die();
             }
-            for (Tank tank : tanks) {
+            for (Tank tank : onlineTanks) {
                 if (tank.intersect(new Point(bullet.getX(), bullet.getY()))) {
                     tank.doHit();
                     bullet.die();
@@ -56,7 +70,7 @@ public class SinglePlayerState implements GameState {
             }
         }
         tank.draw(g);
-        for (Tank tank : tanks) {
+        for (Tank tank : onlineTanks) {
             tank.draw(g);
         }
         for (Bullet bullet : bullets) {
@@ -81,6 +95,7 @@ public class SinglePlayerState implements GameState {
             case KeyEvent.VK_RIGHT: tank.turnBodyRight(); break;
             case KeyEvent.VK_Z: tank.turnHeaderLeft(); break;
             case KeyEvent.VK_C: tank.turnHeaderRight(); break;
+            case KeyEvent.VK_SLASH: Launcher.GAME_WINDOW.log.addMessage(String.valueOf(MultiThreadServer.getPort())); break;
             case KeyEvent.VK_SPACE: {
                 Bullet bullet = tank.doShot();
                 if (bullet == null) break;
@@ -88,7 +103,7 @@ public class SinglePlayerState implements GameState {
                 PlaySound.playSound(ResourceLoader.SHOT_AUDIO);
                 break;
             }
-            case KeyEvent.VK_ESCAPE: Launcher.GAME_WINDOW.setGameState(new PauseState(this)); break;
+            case KeyEvent.VK_ESCAPE: Launcher.GAME_WINDOW.setGameState(new PauseState(this, devClient)); break;
         }
     }
 

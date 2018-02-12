@@ -2,6 +2,7 @@ package server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -25,13 +26,13 @@ public class MonoThreadClientHandler implements Runnable {
             DataInputStream in = new DataInputStream(clientDialog.getInputStream());
             System.out.println("DataInputStream created");
             System.out.println("DataOutputStream  created");
-
+            String name = "";
             while (!clientDialog.isClosed()) {
-                System.out.println("Server reading from channel");
-                String entry = null;
+//                System.out.println("Server reading from channel");
+                String entry;
                 try {
                     entry = in.readUTF();
-                } catch (SocketException e) {
+                } catch (SocketException | EOFException e) {
                     System.out.println(e.getMessage());
                     System.out.println("Connection drop...");
                     break;
@@ -40,36 +41,27 @@ public class MonoThreadClientHandler implements Runnable {
 //                System.out.println("READ from clientDialog message - " + entry);
 
                 String[] lines = entry.split("/");
-                if (lines.length == 2)
+                if (lines.length == 2) {
                     hashMap.put(lines[0], lines[1]);
+                    name = lines[0];
+                }
                 String tLine = "";
-                int count = hashMap.size();
+                int count = 0;
                 for(HashMap.Entry<String, String> item: hashMap.entrySet()) {
-                    count--;
-                    tLine += item.getKey() + "/" + item.getValue();
-                    tLine += count > 0 ? ":" : "";
+                    if (!item.getKey().equals(lines[0])) {
+                        tLine += count == 0 ? "" : ":";
+                        tLine += item.getKey() + "/" + item.getValue();
+                        count++;
+                    }
                 }
                 out.writeUTF(tLine);
-                System.out.println("Send to client (" + clientDialog.getLocalPort() + ") -> " + tLine);
                 out.flush();
-                Thread.sleep(10);
-//                if (entry.equalsIgnoreCase("quit")) {
-//                    System.out.println("Client initialize connections suicide ...");
-//                    out.writeUTF("Server reply - " + entry + " - OK");
-//                    Thread.sleep(3000);
-//                    break;
-//                }
-//
-//                System.out.println("Server try writing to channel");
-//                out.writeUTF("Server reply - " + entry + " - OK");
-//                System.out.println("Server Wrote message to clientDialog.");
-//                out.flush();
-//                Thread.sleep(100);
+                Thread.sleep(3);
             }
 
             System.out.println("Client disconnected");
             System.out.println("Closing connections & channels.");
-
+            hashMap.remove(name);
             in.close();
             out.close();
             clientDialog.close();
