@@ -77,7 +77,7 @@ public class MainFrame extends JFrame {
                 long l = System.currentTimeMillis();
                 GameDev.tank.update();
                 try {
-                    Tank[] tanks = GameDev.devClient.sendToServer(GameDev.tank);
+                    Tank[] tanks = GameDev.devClient.sendToServerTank(GameDev.tank);
                     GameDev.otherTanks.clear();
                     for (Tank tank: tanks) {
                         GameDev.otherTanks.add(tank);

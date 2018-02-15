@@ -17,7 +17,7 @@ import java.util.LinkedList;
  **/
 public class SinglePlayerState implements GameState {
     private Tank tank = new Tank(Launcher.NICKNAME, 100, 100, 0);
-    private LinkedList<Bullet> bullets = new LinkedList<>();
+    public LinkedList<Bullet> bullets = new LinkedList<>();
     private LinkedList<Bullet> tBullets = new LinkedList<>();
     private LinkedList<Tank> tanks = new LinkedList<>();
     private GameDevClient devClient;

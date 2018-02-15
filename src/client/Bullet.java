@@ -10,12 +10,13 @@ import java.awt.image.BufferedImage;
  * Created by Vladimir on 07/02/18.
  **/
 public class Bullet {
+    private long id;
     private double x;
     private double y;
     private double angle = 0.0;
     private int dieCount = 0;
     private static final double MOVE_SPEED = 5;
-    private static final int DIE_TIME = 200;
+    private static final int DIE_TIME = 20;
     private BufferedImage bullet_image = ResourceLoader.BULLET;
     private BufferedImage boom_image = ResourceLoader.BOOM;
 
@@ -27,10 +28,15 @@ public class Bullet {
         return (int)y;
     }
 
+    private Bullet() {
+
+    }
+
     public Bullet(int x, int y, double angle) {
         this.x = x;
         this.y = y;
         this.angle = angle;
+        this.id = Math.round(Math.random() * Long.MAX_VALUE);
     }
 
     public boolean isDie() {
@@ -63,5 +69,36 @@ public class Bullet {
         if (isDie()) {
             g.drawImage(boom_image, ((int) (x - boom_image.getWidth() / 2)), ((int) (y - boom_image.getHeight() / 2)), null);
         }
+    }
+
+    public String getData() {
+        return String.valueOf(id) + ";" + String.valueOf(x) + ";" + String.valueOf(y) + ";" + String.valueOf(angle);
+    }
+
+    public static Bullet getInstantsByData(String line) {
+        String[] lines = line.split(";");
+        if (lines.length != 4) throw new IllegalArgumentException("Must be id; x ; y ; angle, but get " + line);
+        Bullet bullet = new Bullet();
+        bullet.id = Long.parseLong(lines[0]);
+        bullet.x = Double.parseDouble(lines[1]);
+        bullet.y = Double.parseDouble(lines[2]);
+        bullet.angle = Double.parseDouble(lines[3]);
+        return bullet;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Bullet bullet = (Bullet) o;
+
+        return id == bullet.id;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
     }
 }

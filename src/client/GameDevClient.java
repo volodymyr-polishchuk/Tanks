@@ -1,5 +1,6 @@
 package client;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -12,8 +13,8 @@ import java.util.Arrays;
  **/
 public class GameDevClient {
     private Socket socket;
-    private DataInputStream inputStream;
-    private DataOutputStream outputStream;
+    private final DataInputStream inputStream;
+    private final DataOutputStream outputStream;
 
     public GameDevClient(InetAddress address, int port) throws IOException, InterruptedException {
         socket = new Socket(address, port);
@@ -21,23 +22,82 @@ public class GameDevClient {
 
         outputStream = new DataOutputStream(socket.getOutputStream());
         inputStream = new DataInputStream(socket.getInputStream());
-        System.out.println(Arrays.toString(sendToServer(new Tank("name", 1, 1, 1))));
     }
 
-    public Tank[] sendToServer(Tank tank) throws IOException, InterruptedException {
-        if (!socket.isClosed() || !socket.isInputShutdown() || !socket.isOutputShutdown()) {
-            outputStream.writeUTF(tank.getData());
-            outputStream.flush();
-            String line = inputStream.readUTF();
-            if (line.isEmpty()) return new Tank[0];
-            String[] lines = line.split(":");
-            Tank[] tanks = new Tank[lines.length];
-            for (int i = 0; i < lines.length; i++) {
-                tanks[i] = Tank.getInstantsByData(lines[i]);
+    public Tank[] sendToServerTank(Tank tank) throws IOException, InterruptedException {
+        synchronized (outputStream) {
+            synchronized (inputStream) {
+                if (!socket.isClosed()) {
+                    outputStream.writeUTF("tank " + tank.getData());
+                    outputStream.flush();
+                    String line = null;
+                    try {
+                        line = inputStream.readUTF();
+                    } catch (EOFException e) {
+                        e.printStackTrace();
+                        close();
+                    }
+                    if (line == null || line.isEmpty()) return new Tank[0];
+                    String[] lines = line.split(":");
+                    Tank[] tanks = new Tank[lines.length];
+                    for (int i = 0; i < lines.length; i++) {
+                        tanks[i] = Tank.getInstantsByData(lines[i]);
+                    }
+                    return tanks;
+                }
             }
-            return tanks;
         }
         close();
+        JOptionPane.showMessageDialog(null, "Connection close", "Server error", JOptionPane.WARNING_MESSAGE);
+        throw new ConnectException("Connection is close");
+    }
+
+    public void sendToServerBullet(Bullet bullet) throws IOException {
+        synchronized (outputStream) {
+            synchronized (inputStream) {
+                if (!socket.isClosed()) {
+                    outputStream.writeUTF("bullet " + bullet.getData());
+                    outputStream.flush();
+                    try {
+                        inputStream.readUTF();
+                    } catch (EOFException e) {
+                        e.printStackTrace();
+                        close();
+                    }
+                    return;
+                }
+            }
+        }
+        close();
+        JOptionPane.showMessageDialog(null, "Connection close", "Server error", JOptionPane.WARNING_MESSAGE);
+        throw new ConnectException("Connection is close");
+    }
+
+    public Bullet[] getFromServerBullets() throws IOException {
+        synchronized (outputStream) {
+            synchronized (inputStream) {
+                if (!socket.isClosed()) {
+                    outputStream.writeUTF("bullets");
+                    outputStream.flush();
+                    String line = null;
+                    try {
+                        line = inputStream.readUTF();
+                    } catch (EOFException e) {
+                        e.printStackTrace();
+                        close();
+                    }
+                    if (line == null || line.isEmpty()) return new Bullet[0];
+                    String[] lines = line.split(":");
+                    Bullet[] bullets = new Bullet[lines.length];
+                    for (int i = 0; i < lines.length; i++) {
+                        bullets[i] = Bullet.getInstantsByData(lines[i]);
+                    }
+                    return bullets;
+                }
+            }
+        }
+        close();
+        JOptionPane.showMessageDialog(null, "Connection close", "Server error", JOptionPane.WARNING_MESSAGE);
         throw new ConnectException("Connection is close");
     }
 

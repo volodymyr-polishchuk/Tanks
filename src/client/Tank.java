@@ -82,6 +82,14 @@ public class Tank {
         return line;
     }
 
+    public double getHealth() {
+        return health;
+    }
+
+    public void setHealth(double health) {
+        this.health = health;
+    }
+
     //  name / xPosition ; yPosition ; rotateBody ; rotateHeader ; health
     public static Tank getInstantsByData(String data) {
         String[] lines = data.split("/");
@@ -100,7 +108,7 @@ public class Tank {
     }
 
     public void doHit() {
-        health = health - 0.05;
+        health = health - 0.30;
     }
 
     public void moveForward() {move = 1;}
@@ -182,8 +190,8 @@ public class Tank {
             }
             health -= health > 0.1 ? 0.001 : 0;
         } else {
-            nx = xPosition + move * Math.cos(Math.toRadians(rotateBody));
-            ny = yPosition + move * Math.sin(Math.toRadians(rotateBody));
+            nx = xPosition + MOVE_SPEED * move * Math.cos(Math.toRadians(rotateBody));
+            ny = yPosition + MOVE_SPEED * move * Math.sin(Math.toRadians(rotateBody));
             if (tryMove(xPosition, yPosition, nx, ny)) {
                 xPosition = nx;
                 yPosition = ny;
@@ -237,4 +245,21 @@ public class Tank {
         g.drawImage(imageHeader, (int)xPosition, (int)yPosition, null);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Tank tank = (Tank) o;
+        return name.equals(tank.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    public String getName() {
+        return name;
+    }
 }

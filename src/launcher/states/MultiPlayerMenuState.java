@@ -21,8 +21,6 @@ public class MultiPlayerMenuState implements GameState {
     private boolean inputAddress = false;
     private String port = "";
     private boolean inputPort = false;
-    private MultiThreadServer server;
-    private Thread hostThread;
 
     @Override
     public void update() {
@@ -106,6 +104,17 @@ public class MultiPlayerMenuState implements GameState {
                     case RETURN: Launcher.GAME_WINDOW.setGameState(new MenuState()); break;
                     case HOST: {
                         new Thread(() -> MultiThreadServer.main(new String[0])).start();
+                        try {
+                            Thread.sleep(1000);
+                            Launcher.GAME_WINDOW.setGameState(
+                                    new MultiPlayerState(
+                                            InetAddress.getByName("localhost"),
+                                            String.valueOf(MultiThreadServer.getPort())
+                                            )
+                            );
+                        } catch (InterruptedException | UnknownHostException e1) {
+                            e1.printStackTrace();
+                        }
                     }
                     break;
                 } break;

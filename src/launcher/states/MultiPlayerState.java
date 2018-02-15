@@ -20,9 +20,8 @@ import java.util.LinkedList;
  * Created by Vladimir on 12/02/18.
  **/
 public class MultiPlayerState implements GameState {
-    private Tank tank = new Tank(Launcher.NICKNAME, 100, 100, 0);
+    public Tank tank = new Tank(Launcher.NICKNAME, 100, 100, 0);
     private LinkedList<Bullet> bullets = new LinkedList<>();
-    private LinkedList<Bullet> tBullets = new LinkedList<>();
     private LinkedList<Tank> onlineTanks = new LinkedList<>();
     private GameDevClient devClient;
 
@@ -38,28 +37,16 @@ public class MultiPlayerState implements GameState {
     public void update() {
         tank.update();
         try {
-            onlineTanks = new LinkedList<>(Arrays.asList(devClient.sendToServer(tank)));
+            onlineTanks = new LinkedList<>(Arrays.asList(devClient.sendToServerTank(tank)));
+            for (Tank othertank : onlineTanks) {
+                if (this.tank.equals(othertank)) {
+                    this.tank.setHealth(othertank.getHealth());
+                }
+            }
+            bullets = new LinkedList<>(Arrays.asList(devClient.getFromServerBullets()));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        tBullets.clear();
-
-        bullets.forEach((bullet) -> {
-            bullet.update();
-            if (tank.intersect(new Point(bullet.getX(), bullet.getY()))) {
-                tank.doHit();
-                bullet.die();
-            }
-            for (Tank tank : onlineTanks) {
-                if (tank.intersect(new Point(bullet.getX(), bullet.getY()))) {
-                    tank.doHit();
-                    bullet.die();
-                }
-            }
-            if (bullet.isDie()) tBullets.add(bullet);
-        });
-        if (tBullets.size() > 0) PlaySound.playSound(ResourceLoader.BOOM_AUDIO);
-        bullets.removeAll(tBullets);
     }
 
     @Override
@@ -70,8 +57,9 @@ public class MultiPlayerState implements GameState {
             }
         }
         tank.draw(g);
-        for (Tank tank : onlineTanks) {
-            tank.draw(g);
+        for (Tank othertank : onlineTanks) {
+            if (this.tank.equals(othertank)) continue;
+            othertank.draw(g);
         }
         for (Bullet bullet : bullets) {
             bullet.draw(g);
@@ -99,7 +87,11 @@ public class MultiPlayerState implements GameState {
             case KeyEvent.VK_SPACE: {
                 Bullet bullet = tank.doShot();
                 if (bullet == null) break;
-                bullets.add(bullet);
+                try {
+                    devClient.sendToServerBullet(bullet);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
                 PlaySound.playSound(ResourceLoader.SHOT_AUDIO);
                 break;
             }
