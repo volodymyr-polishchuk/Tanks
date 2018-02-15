@@ -27,27 +27,28 @@ public class ResourceLoader {
     public static Clip SHOT_AUDIO;
 
     public ResourceLoader() throws IOException {
-        MENU_CHECK_ICON = ImageIO.read(ClassLoader.class.getResourceAsStream("/resource/icons/menu_check_icon.png"));
-        MENU_LOGO = ImageIO.read(ClassLoader.class.getResourceAsStream("/resource/icons/menu_logo.png"));
-        TANK_BODY = ImageIO.read(getClass().getResourceAsStream("/resource/tankBody.png"));
-        TANK_HEADER = ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader.png"));
-        FON = ImageIO.read(getClass().getResourceAsStream("/resource/fon.png"));
-        BULLET = ImageIO.read(getClass().getResourceAsStream("/resource/bullet.png"));
-        BOOM = ImageIO.read(getClass().getResourceAsStream("/resource/boom.png"));
-        WALL = ImageIO.read(getClass().getResourceAsStream("/resource/wall.png"));
-        TANK_BODY_CRASH = ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_crash_one.png"));
-        TANK_HEADER_CRASH = ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_dark_green.png"));
-        TANK_BODY_ENEMY = ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader_dark_green.png"));
+        MENU_CHECK_ICON =   ImageIO.read(getClass().getResourceAsStream("/resource/icons/menu_check_icon.png"));
+        MENU_LOGO =         ImageIO.read(getClass().getResourceAsStream("/resource/icons/menu_logo.png"));
+        TANK_BODY =         ImageIO.read(getClass().getResourceAsStream("/resource/tankBody.png"));
+        TANK_HEADER =       ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader.png"));
+        FON =               ImageIO.read(getClass().getResourceAsStream("/resource/fon.png"));
+        BULLET =            ImageIO.read(getClass().getResourceAsStream("/resource/bullet.png"));
+        BOOM =              ImageIO.read(getClass().getResourceAsStream("/resource/boom.png"));
+        WALL =              ImageIO.read(getClass().getResourceAsStream("/resource/wall.png"));
+        TANK_BODY_CRASH =   ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_crash_one.png"));
+        TANK_HEADER_CRASH = ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader_crash_one.png"));
+        TANK_BODY_ENEMY =   ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_olive.png"));
+        TANK_HEADER_ENEMY = ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader_olive.png"));
         try {
             BOOM_AUDIO = AudioSystem.getClip();
             AudioInputStream inputStream = AudioSystem.getAudioInputStream(
-                    new BufferedInputStream(ClassLoader.class.getResourceAsStream("/resource/audio/two.wav"))
+                    new BufferedInputStream(getClass().getResourceAsStream("/resource/audio/two.wav"))
             );
             BOOM_AUDIO.open(inputStream);
 
             SHOT_AUDIO = AudioSystem.getClip();
             inputStream = AudioSystem.getAudioInputStream(
-                    new BufferedInputStream(ClassLoader.class.getResourceAsStream("/resource/audio/one.wav"))
+                    new BufferedInputStream(getClass().getResourceAsStream("/resource/audio/one.wav"))
             );
             SHOT_AUDIO.open(inputStream);
 

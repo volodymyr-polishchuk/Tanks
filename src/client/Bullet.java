@@ -16,7 +16,7 @@ public class Bullet {
     private double angle = 0.0;
     private int dieCount = 0;
     private static final double MOVE_SPEED = 5;
-    private static final int DIE_TIME = 20;
+    private static final int DIE_TIME = (int) (300 / MOVE_SPEED);
     private BufferedImage bullet_image = ResourceLoader.BULLET;
     private BufferedImage boom_image = ResourceLoader.BOOM;
 

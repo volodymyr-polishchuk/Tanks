@@ -25,6 +25,8 @@ public class MainFrame extends JFrame implements Runnable {
         super(title);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(WIDTH, HEIGHT);
+        setLocation((int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth() - getWidth()) / 2,
+                (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight() - getHeight()) / 2);
         requestFocus();
         try {
             setIconImage(ImageIO.read(getClass().getResourceAsStream("/resource/iconlogo.png")));

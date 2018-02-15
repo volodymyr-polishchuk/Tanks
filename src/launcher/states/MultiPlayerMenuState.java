@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
  * Created by Vladimir on 10/02/18.
  **/
 public class MultiPlayerMenuState implements GameState {
-    private static String[] items = new String[] {"Адреса сервера", "Порт", "З'єднатися", "Запустити сервер", "На головну"};
+    private static String[] items = new String[] {"Адреса сервера", "Порт", "З'єднатися", "Хост", "На головну"};
     private static final int ADDRESS = 0, PORT = 1, CONNECT = 2, HOST = 3, RETURN = 4;
     private int nowItem = ADDRESS;
     private String address = "";

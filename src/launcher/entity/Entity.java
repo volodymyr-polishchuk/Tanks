@@ -15,6 +15,8 @@ public interface Entity extends MouseListener, KeyListener{
 
     Point getPosition();
 
+    double getRotate();
+
     String getData();
 
     Entity getInstance(String data);

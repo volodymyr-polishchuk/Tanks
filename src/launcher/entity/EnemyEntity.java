@@ -4,7 +4,6 @@ import client.Bullet;
 import client.PlaySound;
 import launcher.Launcher;
 import launcher.ResourceLoader;
-import launcher.states.GameEndState;
 import launcher.states.PauseState;
 import launcher.states.SinglePlayerState;
 
@@ -13,17 +12,20 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.util.LinkedList;
 
 /**
  * Created by Vladimir on 15/02/18.
  **/
-public class PlayerEntity implements Entity {
+public class EnemyEntity implements Entity {
     private String name;
     private double xPosition;
     private double yPosition;
     private double rotateBody = 0.0;
     private double rotateHeader = 0.0;
+    // 
+    private double vx = 0;
+    private double vy = 0;
+    // 
     private double health = 1;
     private double cool_down_count = (int) COOL_DOWN;
 
@@ -33,20 +35,19 @@ public class PlayerEntity implements Entity {
     private BufferedImage textureHeader;
 
     private static final double COOL_DOWN = 50; // Кадрів
-    private static final double BODY_ROTATE = 2.0; // Градусів за кадр
-    private static final double HEADER_ROTATE = 3.2; // Градусів за кадр
+    private static final double BODY_ROTATE = 1.0; // Градусів за кадр
+    private static final double HEADER_ROTATE = 2.2; // Градусів за кадр
     private static final double MOVE_SPEED = 2.0; // Довжина пройденого шляху за кадр
     private static final double MOVE_FORCE = 1.0; // Довжина пройденого шляху за кадр
 
     private SinglePlayerState state;
-//    private LinkedList<Point> ways = new LinkedList<>();
 
-    private PlayerEntity() {
-        textureBody = ResourceLoader.TANK_BODY;
-        textureHeader = ResourceLoader.TANK_HEADER;
+    private EnemyEntity() {
+        textureBody = ResourceLoader.TANK_BODY_ENEMY;
+        textureHeader = ResourceLoader.TANK_HEADER_ENEMY;
     }
 
-    public PlayerEntity(String name, double xPosition, double yPosition, double rotateBody, double rotateHeader, SinglePlayerState state) {
+    public EnemyEntity(String name, double xPosition, double yPosition, double rotateBody, double rotateHeader, SinglePlayerState state) {
         this();
         this.name = name;
         this.xPosition = xPosition;
@@ -90,7 +91,7 @@ public class PlayerEntity implements Entity {
         final char split = '/';
         String[] args = data.split(String.valueOf(split));
         if (args.length != 7) throw new IllegalComponentStateException("Data must have 7 arg, but get {" + data + "} data");
-        PlayerEntity entity = new PlayerEntity();
+        EnemyEntity entity = new EnemyEntity();
         entity.name = args[0];
         entity.xPosition = Double.parseDouble(args[1]);
         entity.yPosition = Double.parseDouble(args[2]);
@@ -154,13 +155,50 @@ public class PlayerEntity implements Entity {
         if (health <= 0) {
             textureBody = ResourceLoader.TANK_BODY_CRASH;
             textureHeader = ResourceLoader.TANK_HEADER_CRASH;
-            Launcher.GAME_WINDOW.setGameState(new GameEndState(state));
             return;
         }
         doMove();
         doRotate();
         cool_down_count += cool_down_count >= COOL_DOWN ? 0 : 1;
-        if (move != 0 && moveForce && health > 0.1) health -= 0.001;
+//        if (move != 0 && moveForce) health -= 0.001;
+        II();
+    }
+
+    private void II() {
+        Point point = state.tank.getPosition();
+        double dist = Math.sqrt(Math.pow(point.getX() - xPosition, 2) + Math.pow(point.getY() - yPosition, 2));
+        if (dist > 20 && dist < 300) {
+            double bx = xPosition + Math.cos(Math.toRadians(rotateBody));
+            double by = yPosition + Math.sin(Math.toRadians(rotateBody));
+            //Рахуємо куди потрібно повернути тіло
+            double s = (bx-xPosition)*(point.getY()-yPosition)-(by-yPosition)*(point.getX()-xPosition);
+            if (s > 2) turnBodyRight(); else if (s < -2) turnBodyLeft();else turnBodyStop();
+            //Рахуємо куди треба їхати
+            double x1 = Math.cos(Math.toRadians(rotateBody));
+            double y1 = Math.sin(Math.toRadians(rotateBody));
+            double x2 = state.tank.getPosition().getX() - xPosition;
+            double y2 = state.tank.getPosition().getY() - yPosition;
+            double result = Math.toDegrees(Math.acos((x1 * x2 + y1 * y2) / (Math.sqrt(x1*x1 + y1*y1) * Math.sqrt(x2*x2 + y2*y2))));
+            if (Math.abs(result) < 20 && dist > 150) moveForward(); else moveStop();
+            //Рахуємо коли потрібно стріляти
+            x1 = Math.cos(Math.toRadians(rotateBody + rotateHeader));
+            y1 = Math.sin(Math.toRadians(rotateBody + rotateHeader));
+            x2 = state.tank.getPosition().getX() - xPosition;
+            y2 = state.tank.getPosition().getY() - yPosition;
+            result = Math.toDegrees(Math.acos((x1 * x2 + y1 * y2) / (Math.sqrt(x1*x1 + y1*y1) * Math.sqrt(x2*x2 + y2*y2))));
+            if (Math.abs(result) < 5 && cool_down_count == COOL_DOWN) {
+                state.bullets.add(doShot());
+            }
+            //Рахуємо куди потрібно повертати башню
+            bx = xPosition + Math.cos(Math.toRadians(rotateBody + rotateHeader));
+            by = yPosition + Math.sin(Math.toRadians(rotateBody + rotateHeader));
+            s = (bx-xPosition)*(point.getY()-yPosition)-(by-yPosition)*(point.getX()-xPosition);
+            if (s > 4) turnHeaderRight(); else if (s < -4) turnHeaderLeft(); else turnHeaderStop();
+        } else {
+            moveStop();
+            turnBodyStop();
+            turnHeaderStop();
+        }
     }
 
     private void doMove() {
@@ -171,57 +209,37 @@ public class PlayerEntity implements Entity {
         if (tryMove(xPosition, yPosition, xNew, yNew)) {
             xPosition = xNew;
             yPosition = yNew;
-//            synchronized (ways) {
-//                ways.addFirst(new Point((int)xNew, (int)yNew));
-//                if (ways.size() > 5) ways.removeLast();
-//            }
         }
     }
 
     private void doRotate() {
         if (move == -1) rotateBody = rotateBody - dBody * BODY_ROTATE;
-        else rotateBody = rotateBody + dBody * BODY_ROTATE;
+            else rotateBody = rotateBody + dBody * BODY_ROTATE;
         if (dHeader != 0)
             rotateHeader = rotateHeader + dBody * BODY_ROTATE + dHeader * HEADER_ROTATE;
     }
 
     public boolean tryMove(double xPosition, double yPosition, double xNew, double yNew) {
         if (health <= 0) return false;
-        for (EnemyEntity tank : state.tanks) {
-            if (tank.intersect(getPolygon(xNew, yNew))) return false;
-        }
+        if (state.tank.intersect(getPolygon(xNew, yNew))) return false;
         return true;
     }
 
     @Override
     public void draw(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.drawString(name, (int)xPosition, (int)(yPosition - 12));
-        g.drawRect((int)xPosition, (int)(yPosition - 10), textureBody.getWidth(), 5);
+//        g.setColor(Color.BLACK);
+//        g.drawString(name, (int)xPosition, (int)(yPosition - 12));
 
-        g.setColor(new Color(0x0AE900));
-        g.fillRect((int)xPosition + 1, (int) (yPosition - 10 + 1), (int) ((textureBody.getWidth() - 1) * health), 4);
-
-        g.setColor(new Color(0xF5222D));
-        g.fillRect((int) (xPosition + 1), (int) (yPosition - 4),
-                (int) (textureBody.getWidth() * (cool_down_count / COOL_DOWN)), (2));
-
+//        g.drawRect((int)xPosition, (int)(yPosition - 10), textureBody.getWidth(), 5);
+//        g.setColor(new Color(0x0AE900));
+//        g.fillRect((int)xPosition + 1, (int) (yPosition - 10 + 1), (int) ((textureBody.getWidth() - 1) * health), 4);
+//
+//        g.setColor(new Color(0xF5222D));
+//        g.fillRect((int) (xPosition + 1), (int) (yPosition - 4),
+//                (int) (textureBody.getWidth() * (cool_down_count / COOL_DOWN)), (2));
 //        g.drawPolygon(getPolygon());
+//        g.drawOval((int)xPosition - 300 + textureBody.getWidth() / 2, (int)yPosition - 300 + textureBody.getHeight() / 2, 600, 600);
         g.setColor(Color.BLACK);
-//        synchronized (ways) {
-//            for (Point point : ways) {
-//                double x1 = (point.getX() + textureBody.getWidth() / 2) +
-//                        (textureBody.getWidth() * 0.3) * Math.cos(Math.toRadians(rotateBody - 150));
-//                double y1 = (point.getY() + textureBody.getHeight() / 2) +
-//                        (textureBody.getHeight() * 0.3) * Math.sin(Math.toRadians(rotateBody - 150));
-//                g.drawLine((int)x1, (int)y1, (int)(x1 + 2 * Math.cos(Math.toRadians(rotateBody + 90))), (int)(y1 + 2 * Math.sin(Math.toRadians(rotateBody + 90))));
-//                x1 = (point.getX() + textureBody.getWidth() / 2) +
-//                        (textureBody.getWidth() * 0.3) * Math.cos(Math.toRadians(rotateBody - 210));
-//                y1 = (point.getY() + textureBody.getHeight() / 2 ) +
-//                        (textureBody.getHeight() * 0.3) * Math.sin(Math.toRadians(rotateBody - 210));
-//                g.drawLine((int)x1, (int)y1, (int)(x1 + 2 * Math.cos(Math.toRadians(rotateBody - 90))), (int)(y1 + 2 * Math.sin(Math.toRadians(rotateBody - 90))));
-//            }
-//        }
 //      rotate image body
         AffineTransform transform = new AffineTransform();
         transform.rotate(Math.toRadians(rotateBody), textureBody.getWidth() / 2, textureBody.getHeight() / 2);
@@ -246,25 +264,7 @@ public class PlayerEntity implements Entity {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.isShiftDown()) {
-            this.moveForce();
-        }
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP: this.moveForward(); break;
-            case KeyEvent.VK_DOWN: this.moveBack(); break;
-            case KeyEvent.VK_LEFT: this.turnBodyLeft(); break;
-            case KeyEvent.VK_RIGHT: this.turnBodyRight(); break;
-            case KeyEvent.VK_Z: this.turnHeaderLeft(); break;
-            case KeyEvent.VK_C: this.turnHeaderRight(); break;
-            case KeyEvent.VK_SPACE: {
-                Bullet bullet = this.doShot();
-                if (bullet == null) break;
-                state.bullets.add(bullet);
-                PlaySound.playSound(ResourceLoader.SHOT_AUDIO);
-                break;
-            }
-            case KeyEvent.VK_ESCAPE: Launcher.GAME_WINDOW.setGameState(new PauseState(state)); break;
-        }
+
     }
 
     public void doHit() {health = health - 0.30;}
@@ -304,14 +304,7 @@ public class PlayerEntity implements Entity {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (!e.isShiftDown()) {
-            this.stopForce();
-        }
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP: case KeyEvent.VK_DOWN: this.moveStop(); break;
-            case KeyEvent.VK_LEFT: case KeyEvent.VK_RIGHT: this.turnBodyStop(); break;
-            case KeyEvent.VK_Z: case KeyEvent.VK_C: this.turnHeaderStop(); break;
-        }
+
     }
 
     @Override
