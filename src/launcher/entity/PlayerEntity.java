@@ -120,18 +120,20 @@ public class PlayerEntity implements Entity {
      * @return Polygon - який позначає хітбокс
      */
     public Polygon getPolygon(double x, double y, int rw, int rh, int hw, int hh) {
-        double cx = x + rw / 2;
-        double cy = y + rh / 2;
-        double tx = cx + (hw / 2) * Math.cos(Math.toRadians(rotateBody));
-        double ty = cy + (hw / 2) * Math.sin(Math.toRadians(rotateBody));
-        double x1 = tx + (hh / 2) * Math.cos(Math.toRadians(rotateBody + 90));
-        double y1 = ty + (hh / 2) * Math.sin(Math.toRadians(rotateBody + 90));
-        double x2 = x1 + (hw) * Math.cos(Math.toRadians(rotateBody + 180));
-        double y2 = y1 + (hw) * Math.sin(Math.toRadians(rotateBody + 180));
-        double x3 = x2 + (hh) * Math.cos(Math.toRadians(rotateBody + 270));
-        double y3 = y2 + (hh) * Math.sin(Math.toRadians(rotateBody + 270));
-        double x4 = x3 + (hw) * Math.cos(Math.toRadians(rotateBody + 360));
-        double y4 = y3 + (hw) * Math.sin(Math.toRadians(rotateBody + 360));
+        double rb = Math.toRadians(rotateBody);
+//        (x1, y1)
+        double x1 = ((x + rw / 2) + (hw / 2) * Math.cos(rb)) + (hh / 2) * Math.cos(rb + (Math.PI / 2d));
+        double y1 = ((y + rh / 2) + (hw / 2) * Math.sin(rb)) + (hh / 2) * Math.sin(rb + (Math.PI / 2d));
+//        (x2, y2)
+        double x2 = x1 + (hw) * Math.cos(rb + Math.PI);
+        double y2 = y1 + (hw) * Math.sin(rb + Math.PI);
+//        (x3, y3)
+        double x3 = x2 + (hh) * Math.cos(rb + ((Math.PI * 3d) / 2d));
+        double y3 = y2 + (hh) * Math.sin(rb + ((Math.PI * 3d) / 2d));
+//        (x4, y4)
+        double x4 = x3 + (hw) * Math.cos(rb + (Math.PI * 2d));
+        double y4 = y3 + (hw) * Math.sin(rb + (Math.PI * 2d));
+//
         return new Polygon(new int[]{(int) x1, (int) x2, (int) x3, (int) x4},
                 new int[]{(int) y1, (int) y2, (int) y3, (int) y4}, 4);
     }
@@ -206,7 +208,7 @@ public class PlayerEntity implements Entity {
         g.fillRect((int) (xPosition + 1), (int) (yPosition - 4),
                 (int) (textureBody.getWidth() * (cool_down_count / COOL_DOWN)), (2));
 
-//        g.drawPolygon(getPolygon());
+        g.drawPolygon(getPolygon());
         g.setColor(Color.BLACK);
 //        synchronized (ways) {
 //            for (Point point : ways) {
