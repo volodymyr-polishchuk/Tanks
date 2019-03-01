@@ -29,7 +29,7 @@ public class MainFrame extends JFrame implements Runnable {
                 (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight() - getHeight()) / 2);
         requestFocus();
         try {
-            setIconImage(ImageIO.read(getClass().getResourceAsStream("/resource/iconlogo.png")));
+            setIconImage(ImageIO.read(getClass().getResourceAsStream("/resource/logo.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }

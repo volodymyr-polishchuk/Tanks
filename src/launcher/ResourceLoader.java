@@ -37,8 +37,8 @@ public class ResourceLoader {
         WALL =              ImageIO.read(getClass().getResourceAsStream("/resource/wall.png"));
         TANK_BODY_CRASH =   ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_crash_one.png"));
         TANK_HEADER_CRASH = ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader_crash_one.png"));
-        TANK_BODY_ENEMY =   ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_olive.png"));
-        TANK_HEADER_ENEMY = ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader_olive.png"));
+        TANK_BODY_ENEMY =   ImageIO.read(getClass().getResourceAsStream("/resource/tankBody_dark_green.png"));
+        TANK_HEADER_ENEMY = ImageIO.read(getClass().getResourceAsStream("/resource/tankHeader_dark_green.png"));
         try {
             BOOM_AUDIO = AudioSystem.getClip();
             AudioInputStream inputStream = AudioSystem.getAudioInputStream(
