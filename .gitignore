@@ -1,3 +1,4 @@
-out/
-src/resource/wait/
-archives/
+.gradle
+build/
+?
+.idea/workspace.xml
